@@ -5,6 +5,7 @@ import os
 import shutil
 import random
 import string
+from pathlib import Path
 
 #generate random id
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -181,20 +182,27 @@ def main(args):
 
 
 
-    # Find available models in folder
     available_models = {}
     print("Loading models from", args.dir_models)
-    normpath = os.path.normpath("/".join([args.dir_models, '**', '']))
-    for img_fn in glob.iglob(normpath, recursive=True):
-        #  print(img_fn)
-        basename = os.path.basename(img_fn)
+
+    # Create a Path object for the directory
+    normpath = Path(args.dir_models)
+
+    print('normpath:', normpath)
+    #normpath = Path('./app/data/ALL_MODELS')
+
+    # Recursively find all files matching *.pth
+    for img_fn in normpath.rglob("*.pth"):
+        print(img_fn)
+        basename = img_fn.name  # Get the file name from the path
         if basename.endswith(".pth"):
-            model_id = basename.split("_")[1]
+            model_id = basename.split(".")[0]  # Adjust based on your naming convention
             available_models[model_id] = img_fn
 
     print("Available models:", available_models)
+  
 
-
+    
 
 
     # Choose models to use
@@ -213,7 +221,9 @@ def main(args):
 
 
     for model_id in MODELS_DICT.keys():
+        print('**model_id:', model_id)
         if model_id in available_models.keys():
+            print('***model_id!:', model_id)
             for struct in args.skul_structure:
                 if struct in MODELS_DICT[model_id].keys():
                     if model_id not in models_to_use.keys():
@@ -222,7 +232,7 @@ def main(args):
 
             # if True in [ for struct in args.skul_structure]:
 
-
+    
 
     print(models_to_use)
 
@@ -351,7 +361,8 @@ def main(args):
 
 
             for model_id,model_path in models_to_use.items():
-
+            
+                print('label_nbr:', len(MODELS_DICT[model_id].keys())+1)
                 net = Create_UNETR(
                     input_channel = 1,
                     label_nbr= len(MODELS_DICT[model_id].keys()) + 1,
@@ -368,16 +379,16 @@ def main(args):
                 
 
                 print("Loading model", model_path)
-                net.load_state_dict(torch.load(model_path,map_location=DEVICE))
+                #net.load_state_dict(torch.load(model_path,map_location=DEVICE))
                 net.eval()
 
-
+                print('checking 1')
                 val_outputs = sliding_window_inference(input_img, cropSize, args.nbr_GPU_worker, net,overlap=args.precision)
-
+                print('checking 2')
                 pred_data = torch.argmax(val_outputs, dim=1).detach().cpu().type(torch.int16)
-
+                print('checking 3')
                 segmentations = pred_data.permute(0,3,2,1)
-
+                
                 # print("Segmentations shape :",segmentations.shape)
 
                 seg = segmentations.squeeze(0)
@@ -385,7 +396,7 @@ def main(args):
                 seg_arr = seg.numpy()[:]
 
 
-
+                print('checking 4')
                 for struct, label in MODELS_DICT[model_id].items():
                 
                     sep_arr = np.where(seg_arr == label, 1,0)
@@ -408,6 +419,7 @@ def main(args):
 
             seg_to_save = {}
             for struct in args.skul_structure:
+                print('struct:', struct)
                 seg_to_save[struct] = prediction_segmentation[struct]
 
             save_vtk = args.gen_vtk
@@ -469,9 +481,9 @@ if __name__ == "__main__":
 
     input_group = parser.add_argument_group('directory')
 
-    input_group.add_argument('-i','--input', type=str, help='Path to the scans folder', default='/app/data/scans')
+    input_group.add_argument('-i','--input', type=str, help='Path to the scans folder', default='./app/data/scans')
     input_group.add_argument('-o', '--output_dir', type=str, help='Folder to save output', default=None)
-    input_group.add_argument('-dm', '--dir_models', type=str, help='Folder with the models', default='/app/data/ALL_MODELS')
+    input_group.add_argument('-dm', '--dir_models', type=str, help='Folder with the models', default='./app/data/ALL_MODELS')
     input_group.add_argument('-temp', '--temp_fold', type=str, help='temporary folder', default='..')
 
     input_group.add_argument('-ss', '--skul_structure', nargs="+", type=str, help='Skul structure to segment', default=["CV","UAW","CB","MAX","MAND"])
