@@ -189,7 +189,7 @@ def main(args):
         print('img_fn:', img_fn)
         basename = os.path.basename(img_fn)
         if basename.endswith(".pth"):
-            model_id = basename.split("_")[1]
+            model_id = basename.split(".")[0]
             available_models[model_id] = img_fn
 
     print("Available models:", available_models)
