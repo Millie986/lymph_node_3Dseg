@@ -185,8 +185,8 @@ def main(args):
     available_models = {}
     print("Loading models from", args.dir_models)
     normpath = os.path.join(args.dir_models, '**')
-    for img_fn in glob.iglob(normpath, recursive=True):
-        #  print(img_fn)
+    for img_fn in glob.glob(normpath, recursive=True):
+        print('img_fn:', img_fn)
         basename = os.path.basename(img_fn)
         if basename.endswith(".pth"):
             model_id = basename.split("_")[1]
