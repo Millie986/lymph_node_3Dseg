@@ -368,12 +368,12 @@ def main(args):
                 
 
                 print("Loading model", model_path)
-                net.load_state_dict(torch.load(model_path,map_location=DEVICE))
+                # net.load_state_dict(torch.load(model_path,map_location=DEVICE))
                 net.eval()
 
-
+                print('Checkpoint 1')
                 val_outputs = sliding_window_inference(input_img, cropSize, args.nbr_GPU_worker, net,overlap=args.precision)
-
+                print('Checkpoint 2')
                 pred_data = torch.argmax(val_outputs, dim=1).detach().cpu().type(torch.int16)
 
                 segmentations = pred_data.permute(0,3,2,1)
@@ -384,7 +384,7 @@ def main(args):
 
                 seg_arr = seg.numpy()[:]
 
-
+                print('Checkpoint 3')
 
                 for struct, label in MODELS_DICT[model_id].items():
                 
