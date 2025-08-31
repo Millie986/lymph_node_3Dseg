@@ -469,9 +469,9 @@ if __name__ == "__main__":
 
     input_group = parser.add_argument_group('directory')
 
-    input_group.add_argument('-i','--input', type=str, help='Path to the scans folder', default='/app/data/scans')
+    input_group.add_argument('-i','--input', type=str, help='Path to the scans folder', default='./app/data/scans')
     input_group.add_argument('-o', '--output_dir', type=str, help='Folder to save output', default=None)
-    input_group.add_argument('-dm', '--dir_models', type=str, help='Folder with the models', default='/app/data/ALL_MODELS')
+    input_group.add_argument('-dm', '--dir_models', type=str, help='Folder with the models', default='./app/data/ALL_MODELS')
     input_group.add_argument('-temp', '--temp_fold', type=str, help='temporary folder', default='..')
 
     input_group.add_argument('-ss', '--skul_structure', nargs="+", type=str, help='Skul structure to segment', default=["CV","UAW","CB","MAX","MAND"])
